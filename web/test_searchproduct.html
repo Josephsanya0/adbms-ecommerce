@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .search-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+        .search-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+        .card {
+            width: 30%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left; /* Align content to the left */
+        }
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .card p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .price {
+            color: #e91e63;
+        }
+        .discounted {
+            font-weight: bold;
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for products..." />
+        <button onclick="searchProducts()">Search</button>
+        <button onclick="sortProducts('asc')">Sort by Discounted Price (Asc)</button>
+        <button onclick="sortProducts('desc')">Sort by Discounted Price (Desc)</button>
+    </div>
+
+    <div class="container" id="productContainer">
+        <!-- Product cards will appear here -->
+    </div>
+
+    <script>
+        let currentProducts = []; // Store current products for sorting
+
+        async function searchProducts() {
+            const keyword = document.getElementById('searchInput').value.trim();
+
+            if (!keyword) {
+                alert('Please enter a keyword to search!');
+                return;
+            }
+
+            try {
+                // Fetch products from the server
+                const response = await fetch(`http://localhost:3000/api/searchProducts?keyword=${encodeURIComponent(keyword)}`);
+                const products = await response.json();
+
+                if (response.ok) {
+                    currentProducts = products; // Store fetched products
+                    displayProducts(products);
+                } else {
+                    alert(products.error || 'An error occurred while fetching the data.');
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                alert('An error occurred while fetching the data.');
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('productContainer');
+            container.innerHTML = ''; // Clear previous results
+
+            if (products.length === 0) {
+                container.innerHTML = '<p>No products found!</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                card.innerHTML = `
+                    <h3>${product.ProductName}</h3>
+                    <p>${product.Description}</p>
+                    <p><span class="price">Price: $${parseFloat(product.ActualPrice).toFixed(2)}</span></p>
+                    <p><span class="discounted">Discounted Price: $${parseFloat(product.DiscountedPrice).toFixed(2)}</span></p>
+                    <button onclick="addToCart(${product.ProductID})">Add to Cart</button>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function sortProducts(order) {
+            if (order === 'asc') {
+                currentProducts.sort((a, b) => a.DiscountedPrice - b.DiscountedPrice);
+            } else if (order === 'desc') {
+                currentProducts.sort((a, b) => b.DiscountedPrice - a.DiscountedPrice);
+            }
+            displayProducts(currentProducts); // Redisplay sorted products
+        }
+
+        async function addToCart(productId) {
+            try {
+                const response = await fetch('http://localhost:3000/api/addToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || 'Product added to cart successfully!');
+                } else {
+                    alert(result.error || 'Failed to add product to cart.');
+                }
+            } catch (error) {
+                console.error('Error adding product to cart:', error);
+                alert('An error occurred while adding the product to the cart.');
+        }
+}
+    </script>
+</body>
+</html>

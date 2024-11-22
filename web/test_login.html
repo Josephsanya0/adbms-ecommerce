@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <div>
+        <label> ID: <input type="text" id="id"></label>
+    </div>
+    <div>
+        <label> PW: <input type="password" id="password"></label>
+    </div>
+    <div>
+        <label><input type="radio" name="userType" value="customer" checked> Customer</label>
+        <label><input type="radio" name="userType" value="vendor"> Vendor</label>
+    </div>
+    <button id="loginButton"> Login </button>
+    <div id="responseOutput"></div>
+
+    <script>
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const id = document.getElementById('id').value;
+            const password = document.getElementById('password').value;
+            const userType = document.querySelector('input[name="userType"]:checked').value;
+
+            const endpoint = userType === 'customer' 
+                ? 'http://localhost:3000/api/passwordCheckCustomer' 
+                : 'http://localhost:3000/api/passwordCheckVendor';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error || response.statusText}`);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data.userPw) {
+                    alert('Error: ID does not exist!');
+                    return;
+                }
+
+                if (data.userPw === password) {
+                    alert('Login successful!');
+                    // Redirect based on user type
+                    if (userType === 'customer') {
+                        window.location.href = 'test_searchproduct.html';
+                    } else if (userType === 'vendor') {
+                        window.location.href = 'vendor.html';
+                    }
+                } else {
+                    alert('Error: Password does not match!');
+                }
+
+                localStorage.setItem('user', id);
+            } catch (error) {
+                console.error('An error occurred:', error);
+                alert('An error occurred while processing your request. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
