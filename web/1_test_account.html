@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindMyLaptop - Account</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: #da2727;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-top: 50px;
+            text-align: left;
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+            color: #1d1b1b;
+            text-align: center;
+        }
+
+        .form-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #1d1b1b;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #333;
+        }
+
+        .update-button {
+            background-color: #007bff;
+            margin-top: 10px;
+        }
+
+        .update-button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-to-main {
+            margin-top: 20px;
+            background-color: #555;
+        }
+
+        .back-to-main:hover {
+            background-color: #777;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Account Page</h1>
+    </header>
+
+    <div class="form-container">
+        <h2>Your Account Details</h2>
+        <form id="accountForm">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" readonly>
+
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" readonly>
+
+            <label for="id">ID:</label>
+            <input type="text" id="id" name="id" readonly>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" readonly>
+
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" name="phone" readonly>
+        </form>
+
+        <button class="update-button" onclick="navigateToUpdate()">Update Information</button>
+        <button class="back-to-main" onclick="navigateToMain()">Back to Main</button>
+    </div>
+
+    <footer>
+        &copy; 2024 FindMyLaptop
+    </footer>
+
+    <script>
+        window.onload = async () => {
+            const customerNo = parseInt(localStorage.getItem('customerNo'), 10);
+
+            if (!customerNo) {
+                alert('Customer not logged in. Redirecting to login page.');
+                window.location.href = '1_test_login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/getCustomer/${customerNo}`);
+                const customer = await response.json();
+
+                if (response.ok) {
+                    console.log('Customer data received:', customer);
+                    document.getElementById('firstName').value = customer.FirstName;
+                    document.getElementById('lastName').value = customer.LastName;
+                    document.getElementById('id').value = customer.ID;
+                    document.getElementById('email').value = customer.Email;
+                    document.getElementById('phone').value = customer.Phone;
+                } else {
+                    alert(`Error: ${customer.error}`);
+                }
+            } catch (error) {
+                console.error('Error fetching account details:', error);
+                alert('Failed to load account details.');
+            }
+        };
+        function navigateToUpdate() {
+            window.location.href = '1_test_update.html';
+        }
+        function navigateToMain() {
+            window.location.href = '1_test_mainpage.html';
+        }
+    </script>
+</body>
+</html>

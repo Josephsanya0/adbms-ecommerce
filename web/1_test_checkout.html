@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindMyLaptop - Checkout</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: #da2727;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-top: 50px;
+            text-align: left;
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+            color: #1d1b1b;
+            text-align: center;
+        }
+
+        .form-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .total-amount {
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #1d1b1b;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #333;
+        }
+
+        .back-to-cart {
+            margin-top: 20px;
+            background-color: #555;
+        }
+
+        .back-to-cart:hover {
+            background-color: #777;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Checkout</h1>
+    </header>
+
+    <div class="form-container">
+        <h2>Order Summary</h2>
+        <form id="checkoutForm">
+            <label for="address">Delivery Address:</label>
+            <input type="text" id="address" placeholder="Enter your address" />
+
+            <label for="cardNumber">Card Number:</label>
+            <input type="text" id="cardNumber" placeholder="Enter your card number" />
+
+            <label for="cardPassword">Card Password:</label>
+            <input type="password" id="cardPassword" placeholder="Enter your card password" />
+
+            <label for="cvv">CVV:</label>
+            <input type="text" id="cvv" placeholder="Enter your CVV" />
+
+            <div class="total-amount">
+                Total Amount: <span id="totalAmount">$0.00</span>
+            </div>
+
+            <button type="button" onclick="proceedCheckout()">Proceed</button>
+        </form>
+
+        <button class="back-to-cart" onclick="navigateToCart()">Back to Cart</button>
+    </div>
+
+    <footer>
+        &copy; 2024 FindMyLaptop
+    </footer>
+
+    <script>
+        async function loadTotalAmount() {
+            const customerNo = localStorage.getItem('customerNo');
+            if (!customerNo) {
+                alert('You need to log in to proceed.');
+                window.location.href = '1_test_login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/getCart?customerNo=${customerNo}`);
+                const cartData = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('totalAmount').textContent = `$${parseFloat(cartData.TotalAmount).toFixed(2)}`;
+                } else {
+                    alert(cartData.error || 'Failed to load total amount.');
+                }
+            } catch (error) {
+                console.error('Error loading total amount:', error);
+            }
+        }
+
+        async function proceedCheckout() {
+            const customerNo = localStorage.getItem('customerNo');
+            const address = document.getElementById('address').value.trim();
+            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const cardPassword = document.getElementById('cardPassword').value.trim();
+            const cvv = document.getElementById('cvv').value.trim();
+
+            if (!customerNo || !address || !cardNumber || !cardPassword || !cvv) {
+                alert('All fields are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerNo, address, cardNumber, cardPassword, cvv })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Order placed successfully!');
+                    window.location.href = '1_test_mainpage.html';
+                } else {
+                    alert(result.error || 'Failed to complete checkout.');
+                }
+            } catch (error) {
+                console.error('Error during checkout:', error);
+            }
+        }
+
+        function navigateToCart() {
+            window.location.href = '1_test_cart.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadTotalAmount);
+    </script>
+</body>
+</html>

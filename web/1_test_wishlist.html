@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #da2727;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        .back-to-main {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 10px 16px;
+            background-color: #1d1b1b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .back-to-main:hover {
+            background-color: #333;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .card {
+            width: 30%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+            color: #1d1b1b;
+        }
+
+        .card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .price {
+            font-size: 1.2rem;
+            color: #e91e63;
+        }
+
+        .discounted {
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: #4caf50;
+        }
+
+        .card button {
+            padding: 10px 16px;
+            background-color: #1d1b1b;
+            font-size: 1.1rem;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .card button:hover {
+            background-color: #1d1b1b;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 4px;
+            margin: 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-to-main" onclick="goToMainPage()">Back to Main</button>
+        <h1>My Wishlist</h1>
+    </header>
+
+    <div class="content">
+        <div class="container" id="wishlistContainer">
+            <!-- Wishlist items will be displayed here -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 FindMyLaptop</p>
+    </footer>
+
+    <script>
+        async function fetchWishlist() {
+            const customerNo = localStorage.getItem('customerNo');
+            if (!customerNo) {
+                alert('You need to log in to view your wishlist!');
+                window.location.href = '1_test_login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/getWishlist?customerNo=${customerNo}`);
+                const wishlist = await response.json();
+
+                if (response.ok) {
+                    displayWishlist(wishlist);
+                } else {
+                    alert(wishlist.error || 'An error occurred while fetching your wishlist.');
+                }
+            } catch (error) {
+                console.error('Error fetching wishlist:', error);
+                alert('An error occurred while fetching your wishlist.');
+            }
+        }
+
+        function displayWishlist(wishlist) {
+            const container = document.getElementById('wishlistContainer');
+            container.innerHTML = '';
+
+            if (wishlist.length === 0) {
+                container.innerHTML = '<p>No items in your wishlist!</p>';
+                return;
+            }
+
+            wishlist.forEach(product => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const imagePath = 'asset/lap.png';
+
+                card.innerHTML = `
+                    <img src="${imagePath}" alt="${product.ProductName}">
+                    <h3>${product.ProductName}</h3>
+                    <p>${product.Description}</p>
+                    <p><span class="price">Price: $${parseFloat(product.ActualPrice).toFixed(2)}</span></p>
+                    <p><span class="discounted">Discounted Price: $${parseFloat(product.DiscountedPrice).toFixed(2)}</span></p>
+                    <button onclick="removeFromWishlist(${product.ProductID})">Remove</button>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        async function removeFromWishlist(productId) {
+            const customerNo = localStorage.getItem('customerNo');
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/removeFromWishlist`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ customerNo, productId }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || 'Item removed from wishlist.');
+                    fetchWishlist();
+                } else {
+                    alert(result.error || 'Failed to remove item from wishlist.');
+                }
+            } catch (error) {
+                console.error('Error removing from wishlist:', error);
+                alert('An error occurred while removing the item.');
+            }
+        }
+
+        function goToMainPage() {
+            window.location.href = '1_test_mainpage.html';
+        }
+        document.addEventListener('DOMContentLoaded', fetchWishlist);
+    </script>
+</body>
+</html>

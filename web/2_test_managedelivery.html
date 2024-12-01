@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Deliveries - Admin Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: #1d1b1b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        .back-to-main {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 10px 16px;
+            background-color: #555;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .back-to-main:hover {
+            background-color: #333;
+        }
+
+        .main-container {
+            background-color: white;
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            height: calc(100vh - 100px);
+        }
+
+        .delivery-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delivery-details {
+            max-width: 70%;
+        }
+
+        .delivery-details h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1d1b1b;
+        }
+
+        .delivery-details p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .update-button {
+            padding: 10px 16px;
+            background-color: #1d1b1b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .update-button:hover {
+            background-color: #333;
+        }        
+
+        footer {
+            margin-top: auto;
+            background-color: #1d1b1b;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-to-main" onclick="goToMainPage()">Back to Main</button>
+        <h1>Manage Deliveries</h1>
+    </header>
+
+    <div class="main-container" id="deliveriesContainer">
+        <!-- Deliveries will be dynamically added here -->
+    </div>
+
+    <footer>
+        <p>&copy; 2024 FindMyLaptop</p>
+    </footer>
+
+    <script>
+        async function loadDeliveries() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/getAllDeliveries`);
+                const deliveries = await response.json();
+
+                if (response.ok) {
+                    displayDeliveries(deliveries);
+                } else {
+                    alert(deliveries.error || 'Failed to fetch deliveries.');
+                }
+            } catch (error) {
+                console.error('Error fetching deliveries:', error);
+            }
+        }
+
+        function displayDeliveries(deliveries) {
+            const container = document.getElementById('deliveriesContainer');
+            container.innerHTML = '';
+
+            if (deliveries.length === 0) {
+                container.innerHTML = '<p>No deliveries found.</p>';
+                return;
+            }
+
+            deliveries.forEach(delivery => {
+                const deliveryDiv = document.createElement('div');
+                deliveryDiv.classList.add('delivery-container');
+
+                deliveryDiv.innerHTML = `
+                    <div class="delivery-details">
+                        <h2>Delivery #${delivery.DeliveryID}</h2>
+                        <p><strong>Order ID:</strong> ${delivery.OrderID}</p>
+                        <p><strong>Customer No:</strong> ${delivery.CustomerNo}</p>
+                        <p><strong>Status:</strong> ${delivery.DeliveryStatus}</p>
+                        <p><strong>Destination:</strong> ${delivery.Destination}</p>
+                        <p><strong>Current Location:</strong> ${delivery.CurrentLocation}</p>
+                    </div>
+                    <button class="update-button" onclick="updateDelivery(${delivery.DeliveryID})">Update</button>
+                `;
+
+                container.appendChild(deliveryDiv);
+            });
+        }
+
+        function updateDelivery(deliveryID) {
+            window.location.href = `2_test_updatedelivery.html?deliveryID=${deliveryID}`;
+        }
+
+        function goToMainPage() {
+            window.location.href = '2_test_admin.html';
+        }
+        document.addEventListener('DOMContentLoaded', loadDeliveries);
+    </script>
+</body>
+</html>

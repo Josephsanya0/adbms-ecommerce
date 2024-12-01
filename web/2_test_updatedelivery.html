@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Delivery - Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #1d1b1b;
+            color: white;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 50px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container h2 {
+            text-align: center;
+            color: #1d1b1b;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .form-actions button {
+            width: 48%;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background-color: #e91e63;
+        }
+
+        .update-btn {
+            background-color: #1d1b1b;
+        }
+
+        .cancel-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        .update-btn:hover {
+            background-color: #333;
+        }        
+
+        footer {
+            margin-top: auto;
+            background-color: #1d1b1b;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Update Delivery</h1>
+    </header>
+
+    <div class="form-container">
+        <h2>Update Delivery Details</h2>
+        <form id="updateDeliveryForm">
+            <div class="form-group">
+                <label for="deliveryStatus">Delivery Status:</label>
+                <input type="text" id="deliveryStatus" name="deliveryStatus" required />
+            </div>
+            <div class="form-group">
+                <label for="currentLocation">Current Location:</label>
+                <input type="text" id="currentLocation" name="currentLocation" required />
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="update-btn">Update</button>
+                <button type="button" class="cancel-btn" onclick="navigateBack()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 FindMyLaptop</p>
+    </footer>
+
+    <script>
+        const deliveryID = new URLSearchParams(window.location.search).get('deliveryID');
+
+        if (!deliveryID) {
+            alert('Delivery ID is missing. Redirecting to manage deliveries page.');
+            window.location.href = '2_test_managedelivery.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchDeliveryDetails);
+
+        async function fetchDeliveryDetails() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/getDelivery/${deliveryID}`);
+                const delivery = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('deliveryStatus').value = delivery.DeliveryStatus;
+                    document.getElementById('currentLocation').value = delivery.CurrentLocation;
+                } else {
+                    alert(delivery.error || 'Failed to fetch delivery details.');
+                    navigateBack();
+                }
+            } catch (error) {
+                console.error('Error fetching delivery details:', error);
+                alert('An error occurred while fetching the delivery details.');
+                navigateBack();
+            }
+        }
+
+        document.getElementById('updateDeliveryForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const updatedDelivery = {
+                deliveryStatus: document.getElementById('deliveryStatus').value.trim(),
+                currentLocation: document.getElementById('currentLocation').value.trim(),
+            };
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/updateDelivery/${deliveryID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedDelivery),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Delivery updated successfully!');
+                    navigateBack();
+                } else {
+                    alert(result.error || 'Failed to update delivery.');
+                }
+            } catch (error) {
+                console.error('Error updating delivery:', error);
+                alert('An error occurred while updating the delivery.');
+            }
+        });
+
+        function navigateBack() {
+            window.location.href = '2_test_managedelivery.html';
+        }
+    </script>
+</body>
+</html>

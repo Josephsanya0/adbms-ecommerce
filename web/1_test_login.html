@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: #da2727;
+            color: white;
+            padding: 12px 18px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            margin-top: 100px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #1d1b1b;
+        }
+
+        .login-container label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 3px;            
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 10px 15px;
+            background-color: #1d1b1b; 
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px; 
+        }
+
+        .login-container button:hover {
+            background-color: #333;
+        }
+
+        .response-output {
+            margin-top: 20px;
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>FindMyComputer</h1>
+        <h2>Login Page</h2>
+    </header>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div>
+            <label for="id">ID</label>
+            <input type="text" id="id" placeholder="Enter your ID">
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        <button id="loginButton">Login</button>
+        <button id="backToMainButton" onclick="navigateToMain()">Back to Main</button>
+        <div id="responseOutput" class="response-output"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const id = document.getElementById('id').value;
+            const password = document.getElementById('password').value;
+
+            const endpoint = 'http://localhost:3000/api/passwordCheckCustomer';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error || response.statusText}`);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data.userPw) {
+                    alert('Error: ID does not exist!');
+                    return;
+                }
+
+                if (data.userPw === password) {
+                    alert('Login successful!');
+                    localStorage.setItem('customerNo', data.customerNo);
+                    localStorage.setItem('customerID', data.customerID);
+
+                    const logResponse = await fetch('http://localhost:3000/api/logLogin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ customerNo: data.customerNo }),
+                    });
+
+                    if (!logResponse.ok) {
+                        console.error('Failed to log the login action');
+                    } else {
+                        console.log('Login action logged successfully');
+                    }
+
+                    window.location.href = '1_test_mainpage.html';
+                } else {
+                    alert('Error: Password does not match!');
+                }
+            } catch (error) {
+                console.error('An error occurred:', error);
+                alert('An error occurred while processing your request. Please try again.');
+            }
+        });
+    </script>
+</body>

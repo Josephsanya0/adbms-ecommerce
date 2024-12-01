@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindMyLaptop - Orders</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: #da2727;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        .back-to-main {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 10px 16px;
+            background-color: #1d1b1b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .back-to-main:hover {
+            background-color: #333;
+        }
+
+        .main-container {
+            background-color: white;
+            width: 90%;
+            max-width: 800px;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .order-container h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1d1b1b;
+        }
+
+        .order-container p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1> Orders </h1>
+        <button class="back-to-main" onclick="navigateToMain()">Back to Main</button>
+    </header>
+
+    <div class="main-container" id="ordersContainer">
+        <!-- Order containers will be dynamically generated here -->
+    </div>
+
+    <footer>
+        &copy; 2024 FindMyLaptop
+    </footer>
+
+    <script>
+        async function loadOrders() {
+            const customerNo = localStorage.getItem('customerNo');
+            if (!customerNo) {
+                alert('You need to log in to view your orders.');
+                window.location.href = '1_test_login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/getOrders?customerNo=${customerNo}`);
+                const orders = await response.json();
+
+                if (response.ok) {
+                    displayOrders(orders);
+                } else {
+                    alert(orders.error || 'Failed to fetch orders.');
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        function displayOrders(orders) {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '';
+
+            if (orders.length === 0) {
+                container.innerHTML = '<p>No orders found.</p>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const orderDiv = document.createElement('div');
+                orderDiv.classList.add('order-container');
+
+                orderDiv.innerHTML = `
+                    <h2>Order #${order.OrderID}</h2>
+                    <p><strong>Total Amount:</strong> $${parseFloat(order.TotalAmount).toFixed(2)}</p>
+                    <p><strong>Order Date:</strong> ${order.OrderDate}</p>
+                    <p><strong>Status:</strong> ${order.OrderStatus}</p>
+                `;
+
+                container.appendChild(orderDiv);
+            });
+        }
+
+        function navigateToMain() {
+            window.location.href = '1_test_mainpage.html';
+        }
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html>

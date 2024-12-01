@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gateway Page</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <p>
+        <a href="1_test_mainpage.html" onclick="clearLocalStorage()">FindMyLaptop - Main Page</a>
+    </p>
+    <p>
+        <a href="another.html">Another site</a>
+    </p>
+    <p>
+        <a href="other.html">Other site</a>
+    </p>
+
+    <script>
+        function clearLocalStorage() {
+            localStorage.clear();
+            console.log('LocalStorage has been cleared.');
+        }
+    </script>    
+</body>
+</html>

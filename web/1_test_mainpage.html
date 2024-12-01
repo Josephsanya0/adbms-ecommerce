@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindMyLaptop (Laptop Online-shopping Mall)</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #da2727;
+            color: white;
+            padding: 50px 10px;
+            position: relative;
+        }
+
+        header h1 {
+            margin: -30px 0 0;
+            font-size: 2.4rem;
+        }
+
+        header h2 {
+            margin: 18px 0 0;
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+
+        .header-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .header-title h1,
+        .header-title h2 {
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .header-buttons {
+            position: absolute;
+            right: 18px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-buttons button {
+            padding: 10px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #1d1b1b;
+            color: white;
+        }
+
+        .header-buttons button:hover {
+            background-color: #333;
+        }
+
+        .sign-in {
+            background-color: #555;
+            font-size: 1.2rem;
+        }
+
+        .sign-up {
+            background-color: #da2727;
+            font-size: 1.2rem;
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .content {
+            flex: 7;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .search-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .search-container button,
+        .search-container select {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #1d1b1b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+
+        .search-container select {
+            width: 250px;
+        }
+
+        .search-container button:hover {
+            background-color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .card {
+            width: 30%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+        }
+
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: #1d1b1b;
+        }
+
+        .card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .price {
+            font-size: 1.2rem;
+            color: #e91e63;
+        }
+
+        .discounted {
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: #4caf50;
+        }
+
+        .card button {
+            padding: 10px 16px;
+            background-color: #1d1b1b;
+            font-size: 1.1rem;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .card button:hover {
+            background-color: #333;
+        }
+
+        .card div {
+            display: flex; 
+            align-items: center;
+            justify-content: space-between; 
+            gap: 8px; 
+        }
+
+        .wishlist-icon {
+            width: 32px !important; 
+            height: 32px !important;
+            object-fit: contain !important;
+            cursor: pointer !important; 
+            margin-top: 8px !important;
+            margin-right: 20px !important;
+        }
+
+        .wishlist-icon:hover {
+            opacity: 0.6; 
+        }
+
+        .sidebar {
+            flex: 1.2;
+            background-color: #1d1b1b;
+            color: white;
+            padding: 20px;
+            box-shadow: -2px 0px 10px rgba(0, 0, 0, 0.2);
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .sidebar button {
+            padding: 18px 18px;
+            margin: 10px 0;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;            
+            font-size: 1rem;
+        }
+
+        .sidebar button:hover {
+            background-color: #555;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 4px;
+            margin: 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="header-title">
+                <h1>FindMyLaptop</h1>
+                <h2>Best Online Laptop Shopping Mall</h2>
+            </div>
+            <div class="header-buttons">
+                <button id="authButton" onclick="handleAuthAction()">Sign-In</button>
+                <button class="sign-up" onclick="navigateToPage('sign-up')">Sign-Up</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main">        
+        <div class="content">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search for products..." />
+                <button onclick="searchProducts()">Search</button>
+                <select id="sortDropdown" onchange="sortProducts(this.value)">
+                    <option value="default">Sort Products</option>
+                    <option value="asc">Price Ascending</option>
+                    <option value="desc">Price Descending</option>
+                </select>
+            </div>
+
+            <div class="container" id="productContainer">
+            </div>
+        </div>
+        <div class="sidebar">
+            <h3 id="customerInfo">Guest</h3>
+            <button onclick="navigateToPage('account')">Account</button>
+            <button onclick="navigateToPage('cart')">Cart</button>
+            <button onclick="navigateToPage('orders')">Orders</button>
+            <button onclick="navigateToPage('wishlist')">Wishlist</button>
+            <button onclick="navigateToPage('delivery')">Delivery Status</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 FindMyLaptop</p>
+    </footer>
+
+    <script>
+        function isLoggedIn() {
+            return localStorage.getItem('customerID') !== null;
+        }
+
+        function requireLogin(action) {
+            if (!isLoggedIn()) {
+                alert('You need to login!');
+                return false;
+            }
+            return true;
+        }
+
+        let currentProducts = [];
+
+        async function searchProducts() {
+            const keyword = document.getElementById('searchInput').value.trim();
+
+            if (!keyword) {
+                alert('Please enter a keyword to search!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/searchProducts?keyword=${encodeURIComponent(keyword)}`);
+                const products = await response.json();
+
+                if (response.ok) {
+                    currentProducts = products;
+                    displayProducts(products);
+                } else {
+                    alert(products.error || 'An error occurred while fetching the data.');
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                alert('An error occurred while fetching the data.');
+            }
+        }
+
+        function getCustomerInfo() {
+            const customerNo = localStorage.getItem('customerNo');
+            const customerID = localStorage.getItem('customerID');
+            return { customerNo, customerID };
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('productContainer');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                container.innerHTML = '<p>No products found!</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const imagePath = 'asset/lap.png'; 
+
+                card.innerHTML = `
+                <img src="${imagePath}" alt="${product.ProductName}">
+                <h3>${product.ProductName}</h3>
+                <p>${product.Description}</p>
+                <p><span class="price">Price: $${parseFloat(product.ActualPrice).toFixed(2)}</span></p>
+                <p><span class="discounted">Discounted Price: $${parseFloat(product.DiscountedPrice).toFixed(2)}</span></p>
+                <div>
+                    <button onclick="addToCart(${product.ProductID})">Add to Cart</button>
+                    <img 
+                        src="asset/heartwhite.png" 
+                        alt="Wishlist" 
+                        class="wishlist-icon" 
+                        onclick="toggleWishlist(this, ${product.ProductID})"
+                    />
+                </div>
+            `;
+
+                container.appendChild(card);
+            });
+        }
+
+        async function toggleWishlist(icon, productId) {
+            const customerNo = localStorage.getItem('customerNo');
+
+            if (!customerNo) {
+                alert('You need to log in to use this feature.');
+                return;
+            }
+
+            const isInWishlist = icon.src.includes('wishlist.png');
+            const newSrc = isInWishlist ? 'asset/heartwhite.png' : 'asset/wishlist.png';
+            const apiUrl = isInWishlist
+                ? `http://localhost:3000/api/removeFromWishlist`
+                : `http://localhost:3000/api/addToWishlist`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId, customerNo }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    icon.src = newSrc;
+                    alert(result.message || (isInWishlist ? 'Removed from Wishlist!' : 'Added to Wishlist!'));
+                } else if (result.error === 'This product is already in the wishlist.') {
+                    icon.src = newSrc;
+                    alert(result.error);
+                } else {
+                    alert(result.error || 'Failed to update wishlist.');
+                }
+            } catch (error) {
+                console.error('Error toggling wishlist:', error);
+                alert('An error occurred while updating the wishlist.');
+            }
+        }
+
+        function sortProducts(order) {
+            if (order === 'asc') {
+                currentProducts.sort((a, b) => a.DiscountedPrice - b.DiscountedPrice);
+            } else if (order === 'desc') {
+                currentProducts.sort((a, b) => b.DiscountedPrice - a.DiscountedPrice);
+            }
+            displayProducts(currentProducts);
+        }
+
+        async function addToCart(productId) {
+            const customerNo = localStorage.getItem('customerNo');
+            if (!customerNo) {
+                alert('You need to log in to add items to your cart.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/addToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'customer-no': customerNo,
+                    },
+                    body: JSON.stringify({ productId }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || 'Product added to cart successfully!');
+                } else {
+                    alert(result.error || 'Failed to add product to cart.');
+                }
+            } catch (error) {
+                console.error('Error adding product to cart:', error);
+                alert('An error occurred while adding the product to the cart.');
+            }
+        }
+
+        function loadSidebarInfo() {
+            const customerID = localStorage.getItem('customerID');
+            const customerInfoElement = document.getElementById('customerInfo');
+            const signUpButton = document.querySelector('.sign-up');
+
+            if (customerID) {
+                customerInfoElement.textContent = customerID;
+                document.getElementById('authButton').textContent = 'Logout';
+
+                if (signUpButton) {
+                    signUpButton.style.display = 'none';
+                }
+            } else {
+                customerInfoElement.textContent = 'Guest';
+                document.getElementById('authButton').textContent = 'Sign-In';
+
+                if (signUpButton) {
+                    signUpButton.style.display = 'inline-block';
+                }
+            }
+        }
+
+        function handleAuthAction() {
+            const customerID = localStorage.getItem('customerID');
+
+            if (customerID) {
+                localStorage.removeItem('customerNo');
+                localStorage.removeItem('customerID');
+                alert('You have successfully logged out!');
+            } else {
+                navigateToPage('sign-in');
+            }
+
+            loadSidebarInfo();
+        }
+
+        function navigateToPage(page) {            
+            if (page === 'sign-in') {
+                window.location.href = '1_test_login.html';
+            } else if (page === 'sign-up') {
+                window.location.href = '1_test_signup.html';
+            } else if (page === 'account') {
+                if (!requireLogin()) return;
+                window.location.href = '1_test_account.html';
+            } else if (page === 'cart') {
+                if (!requireLogin()) return;
+                window.location.href = '1_test_cart.html';
+            } else if (page === 'orders') {
+                if (!requireLogin()) return;
+                window.location.href = '1_test_orders.html';
+            } else if (page === 'wishlist') {
+                if (!requireLogin()) return;
+                window.location.href = '1_test_wishlist.html';
+            } else if (page === 'delivery') {
+                if (!requireLogin()) return;
+                window.location.href = '1_test_delivery.html';
+            } else {
+                alert('Page not found!');
+            }
+        }
+
+        let wishlistProducts = [];
+
+        async function fetchWishlistState() {
+            const customerNo = localStorage.getItem('customerNo');
+
+            if (!customerNo) return;
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/getWishlistState?customerNo=${customerNo}`);
+                const wishlist = await response.json();
+
+                if (response.ok) {
+                    wishlistProducts = wishlist;
+                } else {
+                    console.error('Error fetching wishlist state:', wishlist.error);
+                }
+            } catch (error) {
+                console.error('Error fetching wishlist state:', error);
+            }
+        }
+
+        async function loadInitialProducts() {
+            await fetchWishlistState();
+            const keyword = '';
+            const response = await fetch(`http://localhost:3000/api/searchProducts?keyword=${encodeURIComponent(keyword)}`);
+            const products = await response.json();
+
+            if (response.ok) {
+                currentProducts = products;
+                displayProducts(products);
+            } else {
+                console.error('Error loading initial products:', products.error);
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('productContainer');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                container.innerHTML = '<p>No products found!</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                const imagePath = 'asset/lap.png';
+                const isInWishlist = wishlistProducts.includes(product.ProductID);
+                const wishlistIcon = isInWishlist ? 'asset/wishlist.png' : 'asset/heartwhite.png';
+
+                card.innerHTML = `
+                    <img src="${imagePath}" alt="${product.ProductName}">
+                    <h3>${product.ProductName}</h3>
+                    <p>${product.Description}</p>
+                    <p><span class="price">Price: $${parseFloat(product.ActualPrice).toFixed(2)}</span></p>
+                    <p><span class="discounted">Discounted Price: $${parseFloat(product.DiscountedPrice).toFixed(2)}</span></p>
+                    <div>
+                        <button onclick="addToCart(${product.ProductID})">Add to Cart</button>
+                        <img 
+                            src="${wishlistIcon}" 
+                            alt="Wishlist" 
+                            class="wishlist-icon" 
+                            onclick="toggleWishlist(this, ${product.ProductID})"
+                        />
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', loadInitialProducts);
+        document.addEventListener('DOMContentLoaded', loadSidebarInfo);
+    </script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - FindMyLaptop - Shopping Cart</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #da2727;
+            color: white;
+            padding: 50px 10px;
+            position: relative;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: -30px 0 0;
+            font-size: 2.4rem;
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .content {
+            flex: 7;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .card {
+            width: 30%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: #1d1b1b;
+        }
+
+        .card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .quantity-controls button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .quantity-controls button:hover {
+            background-color: #555;
+        }
+
+        .sidebar {
+            flex: 1;
+            background-color: #1d1b1b;
+            color: white;
+            padding: 20px;
+            box-shadow: -2px 0px 10px rgba(0, 0, 0, 0.2);
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .sidebar .total {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .sidebar button {
+            padding: 18px 18px;
+            margin: 10px 0;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .sidebar button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .sidebar button:hover:not(:disabled) {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Shopping Cart</h1>
+    </header>
+
+    <div class="main">
+        <div class="content">
+            <div class="container" id="cartContainer">
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h3 id="customerInfo">Guest</h3>
+            <div class="total">
+                Total: <span id="totalAmount">$0.00</span>
+            </div>
+            <button onclick="navigateToPage('main')">Back to Main</button>
+            <button onclick="navigateToPage('checkout')" id="checkoutButton">Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        function getCustomerInfo() {
+            const customerNo = localStorage.getItem('customerNo');
+            const customerID = localStorage.getItem('customerID');
+            return { customerNo, customerID };
+        }
+
+        async function loadCart() {
+            const { customerNo } = getCustomerInfo();
+
+            if (!customerNo) {
+                alert('You need to log in to view your cart.');
+                window.location.href = '1_test_login.html';
+                return;
+            }
+
+            try {
+                const cartResponse = await fetch(`http://localhost:3000/api/getCart?customerNo=${customerNo}`);
+                const cartData = await cartResponse.json();
+
+                if (!cartResponse.ok || !cartData.CartID) {
+                    alert('Failed to fetch cart data.');
+                    disableCheckoutButton(true);
+                    return;
+                }
+
+                const { CartID, TotalAmount } = cartData;
+
+                const itemsResponse = await fetch(`http://localhost:3000/api/getCartItems?cartID=${CartID}`);
+                const items = await itemsResponse.json();
+
+                if (itemsResponse.ok) {
+                    displayCartItems(items, CartID);
+                    disableCheckoutButton(items.length === 0);
+                } else {
+                    alert(items.error || 'Failed to fetch cart items.');
+                    disableCheckoutButton(true);
+                }
+
+                document.getElementById('totalAmount').textContent = `$${parseFloat(TotalAmount).toFixed(2)}`;
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                alert('An error occurred while loading your cart.');
+                disableCheckoutButton(true);
+            }
+        }
+
+        function displayCartItems(items, cartID) {
+            const container = document.getElementById('cartContainer');
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML = '<p>Your cart is empty!</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                card.innerHTML = `
+                    <img src="asset/lap.png" alt="${item.ProductName}">
+                    <h3>${item.ProductName}</h3>
+                    <p>${item.Description}</p>
+                    <p><span class="price">Price: $${parseFloat(item.ActualPrice).toFixed(2)}</span></p>
+                    <p><span class="discounted">Discounted Price: $${parseFloat(item.DiscountedPrice).toFixed(2)}</span></p>
+                    <p><span class="quantity">Quantity: ${item.Quantity}</span></p>
+                    <p><span class="subtotal">Subtotal: $${parseFloat(item.Subtotal).toFixed(2)}</span></p>
+                    <div class="quantity-controls">
+                        <button onclick="updateCartItem(${cartID}, ${item.ProductID}, ${item.Quantity - 1})">${item.Quantity === 1 ? 'Delete' : '-'}</button>
+                        <span>${item.Quantity}</span>
+                        <button onclick="updateCartItem(${cartID}, ${item.ProductID}, ${item.Quantity + 1})">+</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+
+        async function updateCartItem(cartID, productID, newQuantity) {
+            if (newQuantity <= 0) {
+                if (!confirm('Are you sure you want to remove this item?')) return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/updateCartItem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cartID, productID, newQuantity }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || 'Cart updated successfully!');
+                    loadCart();
+                } else {
+                    alert(result.error || 'Failed to update cart item.');
+                }
+            } catch (error) {
+                console.error('Error updating cart item:', error);
+                alert('An error occurred while updating the cart.');
+            }
+        }
+
+        function disableCheckoutButton(disable) {
+            const checkoutButton = document.getElementById('checkoutButton');
+            if (disable) {
+                checkoutButton.setAttribute('disabled', 'disabled');
+            } else {
+                checkoutButton.removeAttribute('disabled');
+            }
+        }
+
+        function navigateToPage(page) {
+            if (page === 'main') {
+                window.location.href = '1_test_mainpage.html';
+            } else if (page === 'checkout') {
+                window.location.href = '1_test_checkout.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCart);
+    </script>
+</body>
+</html>

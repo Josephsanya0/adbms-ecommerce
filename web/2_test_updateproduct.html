@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Product - Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #1d1b1b;
+            color: white;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 50px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container h2 {
+            text-align: center;
+            color: #1d1b1b;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-actions button {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .update-btn {
+            background-color: #1d1b1b;
+        }
+
+        .cancel-btn {
+            background-color: #e91e63;
+        }
+
+        .update-btn:hover {
+            background-color: #333;
+        }
+
+        .cancel-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        footer {
+            margin-top: auto;
+            background-color: #1d1b1b;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Update Product</h1>
+    </header>
+
+    <div class="form-container">
+        <h2>Update Product Details</h2>
+        <form id="updateProductForm">
+            <div class="form-group">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" name="productName" required />
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="actualPrice">Actual Price ($):</label>
+                <input type="number" id="actualPrice" name="actualPrice" step="0.01" required />
+            </div>
+            <div class="form-group">
+                <label for="discountedPrice">Discounted Price ($):</label>
+                <input type="number" id="discountedPrice" name="discountedPrice" step="0.01" required />
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="update-btn">Update</button>
+                <button type="button" class="cancel-btn" onclick="navigateBack()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 FindMyLaptop</p>
+    </footer>
+
+    <script>
+        const productId = new URLSearchParams(window.location.search).get('productId');
+
+        if (!productId) {
+            alert('Product ID is missing. Redirecting to admin dashboard.');
+            window.location.href = '2_test_admin.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchProductDetails();
+        });
+
+        async function fetchProductDetails() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/getProduct/${productId}`);
+                const product = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('productName').value = product.ProductName;
+                    document.getElementById('description').value = product.Description;
+                    document.getElementById('actualPrice').value = product.ActualPrice;
+                    document.getElementById('discountedPrice').value = product.DiscountedPrice;
+                } else {
+                    alert(product.error || 'Failed to fetch product details.');
+                    navigateBack();
+                }
+            } catch (error) {
+                console.error('Error fetching product details:', error);
+                alert('An error occurred while fetching the product details.');
+                navigateBack();
+            }
+        }
+
+        document.getElementById('updateProductForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const updatedProduct = {
+                productName: document.getElementById('productName').value,
+                description: document.getElementById('description').value,
+                actualPrice: parseFloat(document.getElementById('actualPrice').value),
+                discountedPrice: parseFloat(document.getElementById('discountedPrice').value)
+            };
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/updateProduct/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedProduct),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Product updated successfully!');
+                    navigateBack();
+                } else {
+                    alert(result.error || 'Failed to update product.');
+                }
+            } catch (error) {
+                console.error('Error updating product:', error);
+                alert('An error occurred while updating the product.');
+            }
+        });
+
+        function navigateBack() {
+            window.location.href = '2_test_admin.html';
+        }
+    </script>
+</body>
+</html>
